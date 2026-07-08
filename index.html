@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Recipe Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#dce9f0 0%,#c3d9e6 55%,#aecbdb 100%);
+    font-family:'Baloo 2',system-ui,sans-serif;
+    overflow:hidden;
+  }
+  .scene{
+    position:relative;
+    width:440px;
+    max-width:96vw;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .title{ font-size:21px; font-weight:800; color:#2c4a5e; text-align:center; margin-bottom:4px; }
+  .subtitle{ font-size:12px; color:#5b7d90; text-align:center; margin-bottom:12px; font-weight:500; }
+
+  .stage{
+    position:relative;
+    width:100%;
+    height:320px;
+    border-radius:22px;
+    border:3px solid #b9d8e5;
+    box-shadow:0 8px 20px rgba(60,90,110,0.18);
+    overflow:hidden;
+    background:linear-gradient(180deg,#fdf3e3 0%,#fdf3e3 62%,#e8c483 62%);
+  }
+
+  /* kitchen backdrop */
+  .wall-tile{
+    position:absolute; top:0; left:0; right:0; height:196px;
+    background:
+      repeating-linear-gradient(90deg, rgba(180,200,210,0.18) 0 2px, transparent 2px 40px),
+      repeating-linear-gradient(0deg, rgba(180,200,210,0.18) 0 2px, transparent 2px 40px);
+  }
+  .counter{
+    position:absolute; left:0; right:0; bottom:0; height:118px;
+    background:linear-gradient(180deg,#e8c483,#d9ac5f);
+    border-top:4px solid #c8933a;
+  }
+  .counter-shine{
+    position:absolute; left:0; right:0; top:4px; height:8px;
+    background:rgba(255,255,255,0.35);
+  }
+
+  /* jar */
+  .jar-wrap{
+    position:absolute; bottom:118px; left:64px;
+    width:74px; height:96px;
+    z-index:4;
+  }
+  .jar-wrap svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .jar-lid{
+    transform-origin:37px 30px;
+    transition:transform .5s cubic-bezier(.34,1.2,.6,1);
+  }
+  .jar-wrap.open .jar-lid{ transform:translateY(-16px) rotate(-18deg); }
+
+  /* treat traveling from jar to dog */
+  .treat{
+    position:absolute;
+    width:26px; height:14px;
+    z-index:6;
+    opacity:0;
+    transition:left 1s cubic-bezier(.4,0,.2,1), top 1s cubic-bezier(.4,0,.2,1), opacity .25s ease, transform .3s ease;
+  }
+  .treat svg{ width:100%; height:100%; display:block; }
+  .treat.show{ opacity:1; }
+
+  /* guy */
+  .guy-wrap{
+    position:absolute; bottom:118px; left:96px;
+    width:70px; height:150px;
+    z-index:5;
+  }
+  .guy-wrap svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .guy-arm-reach{
+    transform-origin:30px 62px;
+    transition:transform .6s cubic-bezier(.4,0,.2,1);
+  }
+  .guy-wrap.reaching .guy-arm-reach{ transform:rotate(58deg); }
+  .guy-wrap.giving .guy-arm-reach{ transform:rotate(95deg) translate(2px,4px); }
+
+  /* Mya, sitting and waiting */
+  .dog-wrap{
+    position:absolute; bottom:118px; right:70px;
+    width:110px; height:100px;
+    z-index:5;
+  }
+  .dog-wrap svg{ width:100%; height:100%; display:block; overflow:visible; }
+  .dog-tail{ transform-origin:14px 70px; animation:tailWag .4s ease-in-out infinite; }
+  @keyframes tailWag{
+    0%,100%{ transform:rotate(-16deg); }
+    50%{ transform:rotate(16deg); }
+  }
+  .dog-head{ transform-origin:70px 44px; transition:transform .35s ease; }
+  .dog-wrap.excited .dog-head{ animation:headBob .3s ease-in-out infinite; }
+  @keyframes headBob{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-4px); }
+  }
+
+  .caption{ margin-top:12px; font-size:12px; color:#5b7d90; text-align:center; font-weight:600; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="title">🍪 My Recipe Box</div>
+  <div class="subtitle">Homemade treats, straight from the jar</div>
+
+  <div class="stage" id="stage">
+    <div class="wall-tile"></div>
+    <div class="counter"><div class="counter-shine"></div></div>
+
+    <!-- cookie jar -->
+    <div class="jar-wrap" id="jarWrap">
+      <svg viewBox="0 0 74 96" overflow="visible">
+        <ellipse cx="37" cy="90" rx="26" ry="5" fill="rgba(0,0,0,0.08)"/>
+        <path d="M12 40 Q10 88 37 88 Q64 88 62 40 Z" fill="#cfeaf5" opacity="0.55" stroke="#8fd0ec" stroke-width="2"/>
+        <ellipse cx="24" cy="66" rx="4" ry="8" fill="#fff" opacity="0.5"/>
+        <!-- treats visible inside -->
+        <ellipse cx="30" cy="70" rx="7" ry="4" fill="#c99a5b"/>
+        <ellipse cx="44" cy="74" rx="7" ry="4" fill="#c99a5b"/>
+        <ellipse cx="37" cy="64" rx="7" ry="4" fill="#b8873f"/>
+        <g class="jar-lid" id="jarLid">
+          <ellipse cx="37" cy="40" rx="27" ry="7" fill="#8fd0ec" stroke="#62b6d9" stroke-width="2"/>
+          <rect x="30" y="24" width="14" height="10" rx="4" fill="#62b6d9"/>
+          <ellipse cx="37" cy="24" rx="7" ry="3.5" fill="#8fd0ec" stroke="#62b6d9" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- treat that flies from jar to dog -->
+    <div class="treat" id="flyingTreat">
+      <svg viewBox="0 0 26 14"><path d="M4 7 a3 3 0 1 1 6 -1 a3 3 0 1 1 8 2 a3 3 0 1 1 -6 1 a3 3 0 1 1 -8 -2 Z" fill="#c99a5b" stroke="#a87c3f" stroke-width="1"/></svg>
+    </div>
+
+    <!-- guy -->
+    <div class="guy-wrap" id="guyWrap">
+      <svg viewBox="0 0 70 150">
+        <!-- legs -->
+        <rect x="20" y="104" width="10" height="40" rx="4" fill="#3d5a6c"/>
+        <rect x="36" y="104" width="10" height="40" rx="4" fill="#3d5a6c"/>
+        <ellipse cx="25" cy="146" rx="7" ry="4" fill="#2c4a5e"/>
+        <ellipse cx="41" cy="146" rx="7" ry="4" fill="#2c4a5e"/>
+        <!-- torso -->
+        <path d="M14 58 Q33 48 52 58 L50 106 Q33 114 16 106 Z" fill="#4a90c8"/>
+        <!-- still arm -->
+        <rect x="46" y="60" width="10" height="34" rx="5" fill="#f2c199" transform="rotate(6 51 60)"/>
+        <!-- reaching arm (animated) -->
+        <g class="guy-arm-reach" id="reachArm">
+          <rect x="4" y="58" width="10" height="34" rx="5" fill="#f2c199"/>
+          <circle cx="9" cy="94" r="6" fill="#f2c199"/>
+        </g>
+        <!-- neck -->
+        <rect x="28" y="44" width="12" height="12" fill="#f2c199"/>
+        <!-- head -->
+        <circle cx="34" cy="30" r="20" fill="#f2c199"/>
+        <!-- scruffy beard -->
+        <path d="M16 30 Q14 48 34 50 Q54 48 52 30 Q54 42 45 47 Q34 52 23 47 Q14 42 16 30 Z" fill="#6b4a35"/>
+        <path d="M27 40 Q34 43 41 40" stroke="#4a3226" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <!-- backwards cap -->
+        <path d="M13 18 Q34 -2 55 18 L55 23 Q34 12 13 23 Z" fill="#e8683f"/>
+        <rect x="50" y="10" width="11" height="11" rx="3" fill="#e8683f"/>
+        <circle cx="34" cy="4" r="3" fill="#c34f2b"/>
+      </svg>
+    </div>
+
+    <!-- Mya -->
+    <div class="dog-wrap" id="dogWrap">
+      <svg viewBox="0 0 110 100" overflow="visible">
+        <!-- tail -->
+        <path class="dog-tail" d="M16 66 Q0 56 6 38" stroke="#8a5638" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <!-- back legs (sitting) -->
+        <ellipse cx="30" cy="90" rx="10" ry="7" fill="#8a5638"/>
+        <ellipse cx="60" cy="90" rx="10" ry="7" fill="#8a5638"/>
+        <!-- body, sitting posture -->
+        <ellipse cx="45" cy="66" rx="34" ry="28" fill="#a0654a"/>
+        <path d="M28 52 Q45 42 62 52 Q66 78 45 86 Q24 78 28 52 Z" fill="#fdf6ec"/>
+        <!-- front paws -->
+        <ellipse cx="34" cy="94" rx="7" ry="5" fill="#a0654a"/>
+        <ellipse cx="56" cy="94" rx="7" ry="5" fill="#a0654a"/>
+
+        <g class="dog-head" id="dogHead">
+          <ellipse cx="70" cy="42" rx="26" ry="23" fill="#a0654a"/>
+          <path d="M52 30 Q70 18 88 30 Q90 52 70 56 Q50 52 52 30 Z" fill="#fdf6ec"/>
+          <path d="M56 12 Q46 -2 58 -6 Q68 4 64 18 Z" fill="#8a5638"/>
+          <path d="M84 12 Q94 -2 82 -6 Q72 4 76 18 Z" fill="#8a5638"/>
+          <ellipse cx="78" cy="46" rx="13" ry="10" fill="#fdf6ec"/>
+          <circle cx="84" cy="42" r="3.6" fill="#3a2a20"/>
+          <circle cx="60" cy="34" r="3" fill="#3a2a20"/>
+          <circle cx="80" cy="34" r="3" fill="#3a2a20"/>
+          <path id="myaTongue" d="M74 54 Q78 63 72 68" stroke="#e88a9a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="caption" id="captionLine">Build the recipe once &mdash; log it by the serving anytime</div>
+</div>
+
+<script>
+  var jarWrap = document.getElementById("jarWrap");
+  var guyWrap = document.getElementById("guyWrap");
+  var dogWrap = document.getElementById("dogWrap");
+  var flyingTreat = document.getElementById("flyingTreat");
+  var caption = document.getElementById("captionLine");
+
+  var JAR_POS = {left:88, top:150};
+  var HAND_POS = {left:108, top:150};
+  var DOG_MOUTH_POS = {left:330, top:150};
+
+  function setTreatPos(pos){
+    flyingTreat.style.left = pos.left+"px";
+    flyingTreat.style.top = pos.top+"px";
+  }
+
+  function runCycle(){
+    caption.textContent = "Build the recipe once — log it by the serving anytime";
+    jarWrap.className = "jar-wrap";
+    guyWrap.className = "guy-wrap";
+    dogWrap.className = "dog-wrap";
+    flyingTreat.className = "treat";
+    setTreatPos(JAR_POS);
+
+    setTimeout(function(){
+      jarWrap.className = "jar-wrap open";
+      guyWrap.className = "guy-wrap reaching";
+    }, 500);
+
+    setTimeout(function(){
+      flyingTreat.className = "treat show";
+      setTreatPos(HAND_POS);
+    }, 1050);
+
+    setTimeout(function(){
+      guyWrap.className = "guy-wrap giving";
+      caption.textContent = "One treat, exactly the right size";
+      setTreatPos(DOG_MOUTH_POS);
+      dogWrap.className = "dog-wrap excited";
+    }, 1500);
+
+    setTimeout(function(){
+      flyingTreat.className = "treat";
+      jarWrap.className = "jar-wrap";
+      guyWrap.className = "guy-wrap";
+      caption.textContent = "Good girl! 🐾";
+    }, 2550);
+
+    setTimeout(function(){
+      dogWrap.className = "dog-wrap";
+    }, 3400);
+
+    setTimeout(runCycle, 4600);
+  }
+
+  setTimeout(runCycle, 500);
+</script>
+
+</body>
+</html>
